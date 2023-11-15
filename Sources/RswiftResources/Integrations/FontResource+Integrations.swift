@@ -50,8 +50,11 @@ extension FontResource {
      - returns: A color that exactly or best matches the desired traits with the given resource (R.color.\*), or nil if no suitable color was found.
      */
     //    @available(*, deprecated, message: "Use UIFont(resource:size:) initializer instead")
-    public func callAsFunction(size: CGFloat) -> UIFont? {
-        UIFont(name: name, size: size)
+    public func callAsFunction(size: CGFloat) -> UIFont {
+        guard let font = UIFont(name: name, size: size) else {
+          fatalError("Unable to initialize font '\(name)')")
+        }
+        return font
     }
 }
 
