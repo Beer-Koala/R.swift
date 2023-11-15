@@ -179,13 +179,28 @@ private func parseXcstrings(_ xcString: XCString, source: String) throws -> [Str
     var dictionary: [StringsTable.Key: StringsTable.Value] = [:]
     for item in xcString.strings {
         let key = item.key
-        guard let val = item.value.localizations?[xcString.sourceLanguage] else {
-            throw ResourceParsingError("No value for source language \(xcString.sourceLanguage) on \(source): \(key)")
+        if let val = item.value.localizations?[xcString.sourceLanguage]  {
+            let params: [StringParam] = try parse(localization: val, source: source, key: key)
+            dictionary[key] = .init(params: params, originalValue: val.stringUnit?.value ?? "")
         }
-        let params: [StringParam] = try parse(localization: val, source: source, key: key)
-        dictionary[key] = .init(params: params, originalValue: val.stringUnit?.value ?? "")
+        let params: [StringParam] = try parse(string: key, source: source, key: key)
+        dictionary[key] = .init(params: params, originalValue: key)
     }
     return dictionary
+}
+
+private func parse(string: String, source: String, key: String) throws -> [StringParam] {
+    let parts = FormatPart.formatParts(formatString: string)
+    var params: [StringParam] = []
+    for part in parts {
+        switch part {
+        case let .reference(reference):
+            throw ResourceParsingError("No value for reference \(reference) on \(source): \(key)")
+        case let .spec(formatSpecifier):
+            params.append(StringParam(name: nil, spec: formatSpecifier))
+        }
+    }
+    return params
 }
 
 private func parse(localization: XCLocalization, source: String, key: String) throws -> [StringParam] {
