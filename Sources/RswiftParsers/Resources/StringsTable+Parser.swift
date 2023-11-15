@@ -179,7 +179,7 @@ private func parseXcstrings(_ xcString: XCString, source: String) throws -> [Str
     var dictionary: [StringsTable.Key: StringsTable.Value] = [:]
     for item in xcString.strings {
         let key = item.key
-        guard let val = item.value.localizations[xcString.sourceLanguage] else {
+        guard let val = item.value.localizations?[xcString.sourceLanguage] else {
             throw ResourceParsingError("No value for source language \(xcString.sourceLanguage) on \(source): \(key)")
         }
         let params: [StringParam] = try parse(localization: val, source: source, key: key)
